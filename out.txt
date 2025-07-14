@@ -1,0 +1,8 @@
+[ 24%] Built target sdl_headers_copy
+[ 26%] Built target vkbootstrap
+[ 26%] Built target fastgltf_simdjson
+[ 26%] Built target fmt
+[ 28%] Built target fastgltf
+[ 96%] Built target SDL2
+[ 98%] Built target imgui
+[100%] Built target engine

@@ -3,6 +3,10 @@
 
 #pragma once
 
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_vulkan.h"
+#include "vk_descriptors.h"
 #include <cstdint>
 #include <vk_types.h>
 #include <vulkan/vulkan_core.h>
@@ -18,36 +22,9 @@ public:
   DeletionQueue _mainDeletionQueue;
   AllocatedImage _drawImage;
   VkExtent2D _drawExtent;
-
   VmaAllocator _allocator;
 
-  FrameData _frames[FRAME_OVERLAP];
-
-  FrameData &get_current_frame() {
-    return _frames[_frameNumber % FRAME_OVERLAP];
-  }
-
-  VkQueue _graphicsQueue;
-  uint32_t _graphicsQueueFamily;
-
-  struct SDL_Window *_window{nullptr};
-
-  static VulkanEngine &Get();
-
-  // initializes everything in the engine
-  void init();
-
-  // shuts down the engine
-  void cleanup();
-
-  // draw loop
-  void draw();
-
-  void draw_background(VkCommandBuffer cmd);
-
-  // run main loop
-  void run();
-
+public:
   VkInstance _instance;
   VkDebugUtilsMessengerEXT _debug_messenger;
   VkPhysicalDevice _chosenGPU;
@@ -61,13 +38,48 @@ public:
   std::vector<VkImageView> _swapchainImageViews;
   VkExtent2D _swapchainExtent;
 
+public:
+  VkQueue _graphicsQueue;
+  uint32_t _graphicsQueueFamily;
+
+  struct SDL_Window *_window{nullptr};
+
+  static VulkanEngine &Get();
+
+public:
+  FrameData _frames[FRAME_OVERLAP];
+
+  FrameData &get_current_frame() {
+    return _frames[_frameNumber % FRAME_OVERLAP];
+  }
+
+public:
+  DescriptorAllocator globalDescriptorAllocator;
+  VkDescriptorSet _drawImageDescriptors;
+  VkDescriptorSetLayout _drawImageDescriptorLayout;
+
+  VkPipeline _gradientPipeline;
+  VkPipelineLayout _gradientPipelineLayout;
+
+public:
+  void init();
+  void cleanup();
+  void draw();
+  void draw_background(VkCommandBuffer cmd);
+  void draw_imgui(VkCommandBuffer cmd, VkImageView targetImageView);
+  void run();
+
 private:
   void create_swapchain(uint32_t width, uint32_t height);
   void destroy_swapchain();
 
 private:
+  void init_imgui();
   void init_vulkan();
   void init_swapchain();
   void init_commands();
   void init_sync_structures();
+  void init_descriptors();
+  void init_pipelines();
+  void init_background_pipelines();
 };
