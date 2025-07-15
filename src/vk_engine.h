@@ -8,6 +8,7 @@
 #include "imgui_impl_vulkan.h"
 #include "vk_descriptors.h"
 #include <cstdint>
+#include <vector>
 #include <vk_types.h>
 #include <vulkan/vulkan_core.h>
 
@@ -60,6 +61,9 @@ public:
 
   VkPipeline _gradientPipeline;
   VkPipelineLayout _gradientPipelineLayout;
+
+  std::vector<ComputeEffect> backgroundEffects;
+  int currentBackgroundEffect{0};
 
 public:
   void init();
