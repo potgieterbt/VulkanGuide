@@ -2,6 +2,8 @@
 // or project specific include files.
 #pragma once
 
+#include "glm/ext/matrix_float4x4.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include <array>
 #include <deque>
@@ -21,6 +23,31 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <vulkan/vulkan_core.h>
+
+struct AllocatedBuffer {
+  VkBuffer buffer;
+  VmaAllocation allocation;
+  VmaAllocationInfo info;
+};
+
+struct Vertex {
+  glm::vec3 position;
+  float uv_x;
+  glm::vec3 normal;
+  float uv_y;
+  glm::vec4 color;
+};
+
+struct GPUMeshBuffers {
+  AllocatedBuffer indexBuffer;
+  AllocatedBuffer vertexBuffer;
+  VkDeviceAddress vertexBufferAdderss;
+};
+
+struct GPUDrawPushConstants {
+  glm::mat4 worldMatrix;
+  VkDeviceAddress vertexBuffer;
+};
 
 struct ComputePushConstants {
   glm::vec4 data1;

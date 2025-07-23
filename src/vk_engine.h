@@ -8,7 +8,12 @@
 #include "imgui_impl_vulkan.h"
 #include "vk_descriptors.h"
 #include <cstdint>
+#include <functional>
+#include <memory>
+#include <span>
+#include <stddef.h>
 #include <vector>
+#include <vk_loader.h>
 #include <vk_types.h>
 #include <vulkan/vulkan_core.h>
 
@@ -22,8 +27,13 @@ public:
   VkExtent2D _windowExtent{1700, 900};
   DeletionQueue _mainDeletionQueue;
   AllocatedImage _drawImage;
+  AllocatedImage _depthImage;
   VkExtent2D _drawExtent;
   VmaAllocator _allocator;
+
+  VkFence _immFence;
+  VkCommandBuffer _immCommandBuffer;
+  VkCommandPool _immCommandPool;
 
 public:
   VkInstance _instance;
@@ -62,20 +72,32 @@ public:
   VkPipeline _gradientPipeline;
   VkPipelineLayout _gradientPipelineLayout;
 
+  VkPipelineLayout _meshPipelineLayout;
+  VkPipeline _meshPipeline;
+
   std::vector<ComputeEffect> backgroundEffects;
   int currentBackgroundEffect{0};
+
+  std::vector<std::shared_ptr<MeshAsset>> testMeshes;
 
 public:
   void init();
   void cleanup();
   void draw();
   void draw_background(VkCommandBuffer cmd);
+  void draw_geometry(VkCommandBuffer cmd);
   void draw_imgui(VkCommandBuffer cmd, VkImageView targetImageView);
+  void immediate_submit(std::function<void(VkCommandBuffer cmd)> &&function);
+  GPUMeshBuffers uploadMesh(std::span<uint32_t> indices,
+                            std::span<Vertex> vertices);
   void run();
 
 private:
   void create_swapchain(uint32_t width, uint32_t height);
+  AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage,
+                                VmaMemoryUsage memoryUsage);
   void destroy_swapchain();
+  void destroy_buffer(const AllocatedBuffer &buffer);
 
 private:
   void init_imgui();
@@ -86,4 +108,7 @@ private:
   void init_descriptors();
   void init_pipelines();
   void init_background_pipelines();
+  void init_triangle_pipeline();
+  void init_mesh_pipeline();
+  void init_default_data();
 };
