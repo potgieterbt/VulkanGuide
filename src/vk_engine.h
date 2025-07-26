@@ -24,11 +24,13 @@ public:
   bool _isInitialized{false};
   int _frameNumber{0};
   bool stop_rendering{false};
+  bool resize_requested{false};
   VkExtent2D _windowExtent{1700, 900};
   DeletionQueue _mainDeletionQueue;
   AllocatedImage _drawImage;
   AllocatedImage _depthImage;
   VkExtent2D _drawExtent;
+  float renderScale = 1.f;
   VmaAllocator _allocator;
 
   VkFence _immFence;
@@ -111,4 +113,5 @@ private:
   void init_triangle_pipeline();
   void init_mesh_pipeline();
   void init_default_data();
+  void resize_swapchain();
 };
