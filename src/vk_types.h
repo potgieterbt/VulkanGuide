@@ -13,6 +13,7 @@
 #include <span>
 #include <string>
 #include <vector>
+#include <vk_descriptors.h>
 
 #include <vk_mem_alloc.h>
 #include <vulkan/vk_enum_string_helper.h>
@@ -23,6 +24,15 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <vulkan/vulkan_core.h>
+
+struct GPUSceneData {
+  glm::mat4 view;
+  glm::mat4 proj;
+  glm::mat4 viewproj;
+  glm::vec4 ambientColor;
+  glm::vec4 sunlightDirection;
+  glm::vec4 sunlightColor;
+};
 
 struct AllocatedBuffer {
   VkBuffer buffer;
@@ -41,7 +51,7 @@ struct Vertex {
 struct GPUMeshBuffers {
   AllocatedBuffer indexBuffer;
   AllocatedBuffer vertexBuffer;
-  VkDeviceAddress vertexBufferAdderss;
+  VkDeviceAddress vertexBufferAddress;
 };
 
 struct GPUDrawPushConstants {
@@ -82,11 +92,14 @@ struct DeletionQueue {
 };
 
 struct FrameData {
-  VkCommandPool _commandPool;
-  VkCommandBuffer _mainCommandBuffer;
   VkSemaphore _swapchainSemaphore, _renderSemaphore;
   VkFence _renderFence;
+
+  VkCommandPool _commandPool;
+  VkCommandBuffer _mainCommandBuffer;
+
   DeletionQueue _deletionQueue;
+  DescriptorAllocatorGrowable _frameDescriptors;
 };
 
 struct AllocatedImage {

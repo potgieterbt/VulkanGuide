@@ -33,6 +33,14 @@ public:
   float renderScale = 1.f;
   VmaAllocator _allocator;
 
+  AllocatedImage _whiteImage;
+  AllocatedImage _blackImage;
+  AllocatedImage _greyImage;
+  AllocatedImage _errorCheckerboardImage;
+
+  VkSampler _defaultSamplerLinear;
+  VkSampler _defaultSamplerNearest;
+
   VkFence _immFence;
   VkCommandBuffer _immCommandBuffer;
   VkCommandPool _immCommandPool;
@@ -71,6 +79,11 @@ public:
   VkDescriptorSet _drawImageDescriptors;
   VkDescriptorSetLayout _drawImageDescriptorLayout;
 
+  GPUSceneData sceneData;
+  VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
+
+  VkDescriptorSetLayout _singleImageDescriptorLayout;
+
   VkPipeline _gradientPipeline;
   VkPipelineLayout _gradientPipelineLayout;
 
@@ -98,8 +111,14 @@ private:
   void create_swapchain(uint32_t width, uint32_t height);
   AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage,
                                 VmaMemoryUsage memoryUsage);
+  AllocatedImage create_image(VkExtent3D size, VkFormat format,
+                              VkImageUsageFlags usage, bool mipmapped = false);
+  AllocatedImage create_image(void *data, VkExtent3D size, VkFormat format,
+                              VkImageUsageFlags usage, bool mipmapped = false);
+
   void destroy_swapchain();
   void destroy_buffer(const AllocatedBuffer &buffer);
+  void destroy_image(const AllocatedImage &img);
 
 private:
   void init_imgui();
