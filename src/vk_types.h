@@ -6,6 +6,7 @@
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include <array>
+#include <cstdint>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -24,6 +25,61 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <vulkan/vulkan_core.h>
+
+struct DrawContext;
+
+enum class MaterialPass : uint8_t {
+  MainColor,
+  Transparent,
+  Other,
+};
+
+struct MaterialPipeline {
+  VkPipeline pipeline;
+  VkPipelineLayout layout;
+};
+
+struct MaterialInstance {
+  MaterialPipeline *pipeline;
+  VkDescriptorSet materialSet;
+  MaterialPass passType;
+};
+
+struct RenderObject {
+  uint32_t indexCount;
+  uint32_t firstIndex;
+  VkBuffer indexBuffer;
+
+  MaterialInstance *material;
+
+  glm::mat4 transform;
+  VkDeviceAddress vertexBufferAddress;
+};
+
+class IRenderable {
+  virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx) = 0;
+};
+
+struct Node : public IRenderable {
+  std::weak_ptr<Node> parent;
+  std::vector<std::shared_ptr<Node>> children;
+
+  glm::mat4 localTransform;
+  glm::mat4 worldTransform;
+
+  void refreshTransform(const glm::mat4 &parentMatrix) {
+    worldTransform = parentMatrix * localTransform;
+    for (auto c : children) {
+      c->refreshTransform(worldTransform);
+    }
+  }
+
+  virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx) {
+    for (auto c : children) {
+      c->Draw(topMatrix, ctx);
+    }
+  }
+};
 
 struct GPUSceneData {
   glm::mat4 view;

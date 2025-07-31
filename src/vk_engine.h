@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "glm/ext/vector_float4.hpp"
+#include "glm/gtc/quaternion.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
@@ -12,12 +14,56 @@
 #include <memory>
 #include <span>
 #include <stddef.h>
+#include <string>
+#include <unordered_map>
 #include <vector>
 #include <vk_loader.h>
 #include <vk_types.h>
 #include <vulkan/vulkan_core.h>
 
 constexpr unsigned int FRAME_OVERLAP = 2;
+
+struct GLTFMetallic_Roughness {
+  MaterialPipeline opaquePipeline;
+  MaterialPipeline transparentPipeline;
+
+  VkDescriptorSetLayout materialLayout;
+
+  struct MaterialConstants {
+    glm::vec4 colorFactors;
+    glm::vec4 metal_rough_factores;
+    glm::vec4 extra1[14];
+  };
+
+  struct MaterialResources {
+    AllocatedImage colorImage;
+    VkSampler colorSampler;
+    AllocatedImage metalRoughImage;
+    VkSampler metalRoughSampler;
+    VkBuffer dataBuffer;
+    uint32_t dataBufferOffset;
+  };
+
+  DescriptorWriter writer;
+
+  void build_pipelines(VulkanEngine *engine);
+  void clear_resources(VkDevice device);
+
+  MaterialInstance
+  write_material(VkDevice device, MaterialPass pass,
+                 const MaterialResources &resources,
+                 DescriptorAllocatorGrowable &descriptorAllocator);
+};
+
+struct DrawContext {
+  std::vector<RenderObject> OpaqueSurfaces;
+};
+
+struct MeshNode : public Node {
+  std::shared_ptr<MeshAsset> mesh;
+
+  virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx) override;
+};
 
 class VulkanEngine {
 public:
@@ -37,6 +83,9 @@ public:
   AllocatedImage _blackImage;
   AllocatedImage _greyImage;
   AllocatedImage _errorCheckerboardImage;
+
+  MaterialInstance defaultData;
+  GLTFMetallic_Roughness metalRoughMaterial;
 
   VkSampler _defaultSamplerLinear;
   VkSampler _defaultSamplerNearest;
@@ -75,9 +124,12 @@ public:
   }
 
 public:
-  DescriptorAllocator globalDescriptorAllocator;
+  DescriptorAllocatorGrowable globalDescriptorAllocator;
   VkDescriptorSet _drawImageDescriptors;
   VkDescriptorSetLayout _drawImageDescriptorLayout;
+
+  DrawContext mainDrawContext;
+  std::unordered_map<std::string, std::shared_ptr<Node>> loadedNodes;
 
   GPUSceneData sceneData;
   VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
@@ -102,6 +154,7 @@ public:
   void draw_background(VkCommandBuffer cmd);
   void draw_geometry(VkCommandBuffer cmd);
   void draw_imgui(VkCommandBuffer cmd, VkImageView targetImageView);
+  void update_scene();
   void immediate_submit(std::function<void(VkCommandBuffer cmd)> &&function);
   GPUMeshBuffers uploadMesh(std::span<uint32_t> indices,
                             std::span<Vertex> vertices);
