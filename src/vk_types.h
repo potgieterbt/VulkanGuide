@@ -64,7 +64,7 @@ struct Node : public IRenderable {
   }
 
   virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx) {
-    for (auto c : children) {
+    for (auto &c : children) {
       c->Draw(topMatrix, ctx);
     }
   }

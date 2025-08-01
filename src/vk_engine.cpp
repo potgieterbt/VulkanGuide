@@ -626,8 +626,6 @@ void VulkanEngine::init_swapchain() {
 void VulkanEngine::init_pipelines() {
   init_background_pipelines();
 
-  init_mesh_pipeline();
-
   metalRoughMaterial.build_pipelines(this);
 }
 
@@ -921,16 +919,6 @@ void VulkanEngine::init_default_data() {
   sampl.magFilter = VK_FILTER_LINEAR;
   sampl.minFilter = VK_FILTER_LINEAR;
   vkCreateSampler(_device, &sampl, nullptr, &_defaultSamplerLinear);
-
-  _mainDeletionQueue.push_function([&]() {
-    vkDestroySampler(_device, _defaultSamplerNearest, nullptr);
-    vkDestroySampler(_device, _defaultSamplerLinear, nullptr);
-
-    destroy_image(_whiteImage);
-    destroy_image(_greyImage);
-    destroy_image(_blackImage);
-    destroy_image(_errorCheckerboardImage);
-  });
 }
 
 void VulkanEngine::update_scene() {

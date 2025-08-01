@@ -53,7 +53,7 @@ struct GLTFMetallic_Roughness {
   struct MaterialConstants {
     glm::vec4 colorFactors;
     glm::vec4 metal_rough_factors;
-    glm::vec4 extra1[14];
+    glm::vec4 extra[14];
   };
 
   struct MaterialResources {
