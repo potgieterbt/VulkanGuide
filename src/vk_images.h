@@ -4,6 +4,8 @@
 #include <vulkan/vulkan_core.h>
 namespace vkutil {
 
+void generate_mipmaps(VkCommandBuffer cmd, VkImage image, VkExtent2D imageSize);
+
 void transition_image(VkCommandBuffer cmd, VkImage image,
                       VkImageLayout currentLayout, VkImageLayout newLayout);
 

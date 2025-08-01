@@ -3,12 +3,14 @@
 
 #pragma once
 
+#include "glm/ext/matrix_float3x4.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
 #include "vk_descriptors.h"
+#include <camera.h>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -23,6 +25,25 @@
 
 constexpr unsigned int FRAME_OVERLAP = 2;
 
+struct RenderObject {
+  uint32_t indexCount;
+  uint32_t firstIndex;
+  VkBuffer indexBuffer;
+
+  MaterialInstance *material;
+  Bounds bounds;
+  glm::mat4 transform;
+  VkDeviceAddress vertexBufferAddress;
+};
+
+struct EngineStats {
+  float frametime;
+  int triangle_count;
+  int drawcall_count;
+  float scene_update_time;
+  float mesh_draw_time;
+};
+
 struct GLTFMetallic_Roughness {
   MaterialPipeline opaquePipeline;
   MaterialPipeline transparentPipeline;
@@ -31,7 +52,7 @@ struct GLTFMetallic_Roughness {
 
   struct MaterialConstants {
     glm::vec4 colorFactors;
-    glm::vec4 metal_rough_factores;
+    glm::vec4 metal_rough_factors;
     glm::vec4 extra1[14];
   };
 
@@ -57,6 +78,7 @@ struct GLTFMetallic_Roughness {
 
 struct DrawContext {
   std::vector<RenderObject> OpaqueSurfaces;
+  std::vector<RenderObject> TransparentSurfaces;
 };
 
 struct MeshNode : public Node {
@@ -78,6 +100,9 @@ public:
   VkExtent2D _drawExtent;
   float renderScale = 1.f;
   VmaAllocator _allocator;
+
+  EngineStats stats;
+  Camera mainCamera;
 
   AllocatedImage _whiteImage;
   AllocatedImage _blackImage;
@@ -147,6 +172,8 @@ public:
 
   std::vector<std::shared_ptr<MeshAsset>> testMeshes;
 
+  std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
+
 public:
   void init();
   void cleanup();
@@ -160,18 +187,19 @@ public:
                             std::span<Vertex> vertices);
   void run();
 
-private:
-  void create_swapchain(uint32_t width, uint32_t height);
   AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage,
                                 VmaMemoryUsage memoryUsage);
-  AllocatedImage create_image(VkExtent3D size, VkFormat format,
-                              VkImageUsageFlags usage, bool mipmapped = false);
   AllocatedImage create_image(void *data, VkExtent3D size, VkFormat format,
                               VkImageUsageFlags usage, bool mipmapped = false);
-
-  void destroy_swapchain();
+  AllocatedImage create_image(VkExtent3D size, VkFormat format,
+                              VkImageUsageFlags usage, bool mipmapped = false);
   void destroy_buffer(const AllocatedBuffer &buffer);
   void destroy_image(const AllocatedImage &img);
+
+private:
+  void create_swapchain(uint32_t width, uint32_t height);
+
+  void destroy_swapchain();
 
 private:
   void init_imgui();
@@ -187,3 +215,5 @@ private:
   void init_default_data();
   void resize_swapchain();
 };
+
+bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj);

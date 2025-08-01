@@ -45,17 +45,6 @@ struct MaterialInstance {
   MaterialPass passType;
 };
 
-struct RenderObject {
-  uint32_t indexCount;
-  uint32_t firstIndex;
-  VkBuffer indexBuffer;
-
-  MaterialInstance *material;
-
-  glm::mat4 transform;
-  VkDeviceAddress vertexBufferAddress;
-};
-
 class IRenderable {
   virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx) = 0;
 };
