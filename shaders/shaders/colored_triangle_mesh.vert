@@ -1,3 +1,4 @@
+//> all
 #version 450
 #extension GL_EXT_buffer_reference : require
 
@@ -11,21 +12,21 @@ struct Vertex {
 	vec3 normal;
 	float uv_y;
 	vec4 color;
-};
+}; 
 
-layout(buffer_reference, std430) readonly buffer VertexBuffer{
+layout(buffer_reference, std430) readonly buffer VertexBuffer{ 
 	Vertex vertices[];
 };
 
 //push constants block
 layout( push_constant ) uniform constants
-{
+{	
 	mat4 render_matrix;
 	VertexBuffer vertexBuffer;
 } PushConstants;
 
-void main()
-{
+void main() 
+{	
 	//load vertex data from device adress
 	Vertex v = PushConstants.vertexBuffer.vertices[gl_VertexIndex];
 
@@ -35,3 +36,4 @@ void main()
 	outUV.x = v.uv_x;
 	outUV.y = v.uv_y;
 }
+//< all

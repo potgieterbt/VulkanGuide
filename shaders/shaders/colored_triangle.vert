@@ -1,8 +1,9 @@
+//> all
 #version 450
 
 layout (location = 0) out vec3 outColor;
 
-void main()
+void main() 
 {
 	//const array of positions for the triangle
 	const vec3 positions[3] = vec3[3](
@@ -22,4 +23,4 @@ void main()
 	gl_Position = vec4(positions[gl_VertexIndex], 1.0f);
 	outColor = colors[gl_VertexIndex];
 }
-
+//< all
